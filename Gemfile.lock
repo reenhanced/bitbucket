@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    reenhanced_bitbucket_api (0.1.5)
+    reenhanced_bitbucket_api (0.1.6)
       faraday (~> 0.9.0)
       faraday_middleware (~> 0.9.0)
       hashie (>= 3.2)
