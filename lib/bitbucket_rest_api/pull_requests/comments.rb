@@ -2,6 +2,8 @@
 
 module BitBucket
   class PullRequests::Comments < API
+    @version = '2.0'
+
     # Creates new PullRequests::Comments API
     def initialize(options = {})
       super(options)

@@ -23,6 +23,8 @@ module BitBucket
       'status' => ['OPEN', 'MERGED', 'DECLINED']
     }
 
+    @version = '2.0'
+
     # Creates new PullRequests API
     def initialize(options = { })
       super(options)

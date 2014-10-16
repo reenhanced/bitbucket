@@ -21,6 +21,8 @@ module BitBucket
     include ParameterFilter
     include Normalizer
 
+    @version = '1.0'
+
     attr_reader *Configuration::VALID_OPTIONS_KEYS
 
     attr_accessor *VALID_API_KEYS
@@ -38,6 +40,7 @@ module BitBucket
     # Creates new API
     def initialize(options={}, &block)
       super()
+      options.endpoint.gsub!('api/1.0', 'api/2.0') if @version == '2.0'
       setup options
       set_api_client
 

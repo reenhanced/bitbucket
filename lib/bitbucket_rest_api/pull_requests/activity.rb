@@ -2,6 +2,8 @@
 
 module BitBucket
   class PullRequests::Activity < API
+    @version = '2.0'
+
     # Creates new PullRequests::Activity API
     def initialize(options = {})
       super(options)

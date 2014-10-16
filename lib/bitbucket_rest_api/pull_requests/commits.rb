@@ -2,6 +2,8 @@
 
 module BitBucket
   class PullRequests::Commits < API
+    @version = '2.0'
+
     # Creates new PullRequests::Commits API
     def initialize(options = {})
       super(options)
