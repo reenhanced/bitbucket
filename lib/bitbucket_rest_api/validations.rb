@@ -18,6 +18,7 @@ module BitBucket
     VALID_API_KEYS = [
         'page',
         'per_page',
+        'auto_pagination',
         'jsonp_callback'
     ]
 

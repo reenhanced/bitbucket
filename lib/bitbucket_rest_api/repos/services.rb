@@ -2,6 +2,7 @@
 
 module BitBucket
   class Repos::Services < API
+    @version = '2.0'
 
     REQUIRED_KEY_PARAM_NAMES = %w[ type ].freeze
 

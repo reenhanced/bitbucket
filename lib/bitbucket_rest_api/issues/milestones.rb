@@ -2,6 +2,7 @@
 
 module BitBucket
   class Issues::Milestones < API
+    @version = '1.0'
 
     VALID_MILESTONE_INPUTS = %w[
       name

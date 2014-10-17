@@ -2,6 +2,7 @@
 
 module BitBucket
   class Issues::Components < API
+    @version = '1.0'
 
     VALID_COMPONENT_INPUTS = %w[ name ].freeze
 

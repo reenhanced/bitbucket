@@ -2,6 +2,7 @@
 
 module BitBucket
   class Repos::Sources < API
+    @version = '1.0'
 
     REQUIRED_COMMENT_PARAMS = %w[
         body

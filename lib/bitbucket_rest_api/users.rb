@@ -4,6 +4,8 @@ module BitBucket
   class Users < API
     extend AutoloadHelper
 
+    @version = '1.0'
+
     # Load all the modules after initializing Repos to avoid superclass mismatch
     autoload_all 'bitbucket_rest_api/users',
                  :Account       => 'account'

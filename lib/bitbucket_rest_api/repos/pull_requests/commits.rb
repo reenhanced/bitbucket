@@ -1,26 +1,28 @@
 # encoding: utf-8
 
 module BitBucket
-  class PullRequests::Activity < API
+  class Repos::PullRequests::Commits < API
     @version = '2.0'
 
-    # Creates new PullRequests::Activity API
+    # Creates new Repos::PullRequests::Commits API
     def initialize(options = {})
       super(options)
     end
 
-    # Get the activity for a pull request
+    # List commits on a pull request
     #
     # = Examples
     #  bitbucket = BitBucket.new
-    #  bitbucket.pull_requests.activity 'user-name', 'repo-name', 'pull-request-id'
+    #  bitbucket.repos.pull_requests.commits.all 'user-name', 'repo-name', 'pull-request-id'
     #
     def list(user_name, repo_name, pull_request_id)
       _update_user_repo_params(user_name, repo_name)
       _validate_user_repo_params(user, repo) unless user? && repo?
       _validate_presence_of pull_request_id
 
-      get_request("/repositories/#{user}/#{repo}/pull_requests/#{pull_request_id}/activity")
+      response = get_request("/repositories/#{user}/#{repo.downcase}/pullrequests/#{pull_request_id}/commits")
+      return response unless block_given?
+      response.each { |el| yield el }
     end
     alias :all :list
   end

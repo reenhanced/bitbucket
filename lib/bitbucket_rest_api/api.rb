@@ -40,7 +40,6 @@ module BitBucket
     # Creates new API
     def initialize(options={}, &block)
       super()
-      options.endpoint.gsub!('api/1.0', 'api/2.0') if @version == '2.0'
       setup options
       set_api_client
 
@@ -49,6 +48,9 @@ module BitBucket
 
     def setup(options={})
       options = BitBucket.options.merge(options)
+      if self.class.instance_variable_get('@version') == '2.0'
+        options[:endpoint] = BitBucket.endpoint.gsub(/\/api\/[0-9.]+/, "/api/2.0")
+      end
       Configuration::VALID_OPTIONS_KEYS.each do |key|
         send("#{key}=", options[key])
       end

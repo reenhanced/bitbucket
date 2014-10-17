@@ -2,6 +2,8 @@
 
 module BitBucket
   class Invitations < API
+    @version = '1.0'
+
     def invite(user_name, repo_name, emailaddress, perm)
       _update_user_repo_params(user_name, repo_name)
       _validate_user_repo_params(user, repo) unless user? && repo?

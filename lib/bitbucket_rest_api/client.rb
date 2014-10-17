@@ -27,7 +27,7 @@ module BitBucket
     end
 
     def pull_requests(options = {})
-      @pull_requests ||= ApiFactory.new 'PullRequests', options
+      @pull_requests ||= ApiFactory.new 'Repos::PullRequests', options
     end
 
     def repos(options = {})

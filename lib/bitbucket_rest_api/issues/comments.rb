@@ -2,6 +2,7 @@
 
 module BitBucket
   class Issues::Comments < API
+    @version = '1.0'
 
     VALID_ISSUE_COMMENT_PARAM_NAME = %w[
       content

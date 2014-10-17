@@ -2,6 +2,7 @@
 
 module BitBucket
   class Repos::Following < API
+    @version = '1.0'
 
     # List repo followers
     #

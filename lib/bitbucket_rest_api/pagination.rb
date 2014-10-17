@@ -1,73 +1,35 @@
 # encoding: utf-8
 
 module BitBucket
-  module Result
+
+  # A module that decorates response with pagination helpers
+  module Pagination
     include BitBucket::Constants
-
-    # TODO Add result counts method to check total items looking at result links
-
-    def ratelimit_limit
-      loaded? ? @env[:response_headers][RATELIMIT_LIMIT] : nil
-    end
-
-    def ratelimit_remaining
-      loaded? ? @env[:response_headers][RATELIMIT_REMAINING] : nil
-    end
-
-    def cache_control
-      loaded? ? @env[:response_headers][CACHE_CONTROL] : nil
-    end
-
-    def content_type
-      loaded? ? @env[:response_headers][CONTENT_TYPE] : nil
-    end
-
-    def content_length
-      loaded? ? @env[:response_headers][CONTENT_LENGTH] : nil
-    end
-
-    def etag
-      loaded? ? @env[:response_headers][ETAG] : nil
-    end
-
-    def date
-      loaded? ? @env[:response_headers][DATE] : nil
-    end
-
-    def location
-      loaded? ? @env[:response_headers][LOCATION] : nil
-    end
-
-    def server
-      loaded? ? @env[:response_headers][SERVER] : nil
-    end
-
-    def status
-      loaded? ? @env[:status] : nil
-    end
-
-    def success?
-      (200..299).include? status
-    end
-
-    # Returns raw body
-    def body
-      loaded? ? @env[:body] : nil
-    end
-
-    def loaded?
-      !!@env
-    end
 
     # Return page links
     def links
-      @@links = BitBucket::PageLinks.new(@env[:body])
+      @links = BitBucket::PageLinks.new(env[:body])
+    end
+
+    # Iterate over results set pages by automatically calling `next_page`
+    # until all pages are exhausted. Caution needs to be exercised when
+    # using this feature - 100 pages iteration will perform 100 API calls.
+    # By default this is off. You can set it on the client, individual API
+    # instances or just per given request.
+    #
+    def auto_paginate(auto=false)
+      if (current_api.auto_pagination? || auto) && self.body.has_key?(:values)
+        resources_bodies = []
+        each_page { |resource| resources_bodies += resource.body }
+        self.body = resources_bodies
+      end
+      self
     end
 
     # Iterator like each for response pages. If there are no pages to
-    # iterate over this method will return nothing.
+    # iterate over this method will return current page.
     def each_page
-      yield self.body
+      yield self
       while page_iterator.has_next?
         yield next_page
       end
@@ -79,7 +41,7 @@ module BitBucket
     def first_page
       first_request = page_iterator.first
       self.instance_eval { @env = first_request.env } if first_request
-      self.body
+      first_request
     end
 
     # Retrives the result of the next page. Returns <tt>nil</tt> if there is
@@ -87,7 +49,7 @@ module BitBucket
     def next_page
       next_request = page_iterator.next
       self.instance_eval { @env = next_request.env } if next_request
-      self.body
+      next_request
     end
 
     # Retrives the result of the previous page. Returns <tt>nil</tt> if there is
@@ -95,9 +57,18 @@ module BitBucket
     def prev_page
       prev_request = page_iterator.prev
       self.instance_eval { @env = prev_request.env } if prev_request
-      self.body
+      prev_request
     end
     alias :previous_page :prev_page
+
+    # Retrives the result of the last page. Returns <tt>nil</tt> if there is
+    # no last page - either because you are already on the last page,
+    # there is only one page or there are no pages at all in the result.
+    def last_page
+      last_request = page_iterator.last
+      self.instance_eval { @env = last_request.env } if last_request
+      last_request
+    end
 
     # Retrives a specific result for a page given page number.
     # The <tt>page_number</tt> parameter is not validate, hitting a page
@@ -106,7 +77,7 @@ module BitBucket
     def page(page_number)
       request = page_iterator.get_page(page_number)
       self.instance_eval { @env = request.env } if request
-      self.body
+      request
     end
 
     # Returns <tt>true</tt> if there is another page in the result set,
@@ -115,17 +86,12 @@ module BitBucket
       page_iterator.has_next?
     end
 
-    # Repopulates objects for new values
-    def reset
-      nil
-    end
-
     private
 
     # Internally used page iterator
     def page_iterator # :nodoc:
-      @@page_iterator = BitBucket::PageIterator.new(@env)
+      @page_iterator = BitBucket::PageIterator.new(links, current_api)
     end
 
-  end # Result
+  end # Pagination
 end # BitBucket

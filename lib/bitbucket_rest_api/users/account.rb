@@ -2,6 +2,7 @@
 
 module BitBucket
   class Users::Account < API
+    @version = '1.0'
 
     # API about users/account , please refer to 
     # https://confluence.atlassian.com/display/BITBUCKET/account+Resource

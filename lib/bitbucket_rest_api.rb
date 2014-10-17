@@ -77,15 +77,15 @@ module BitBucket
                :Issues          => 'issues',
                :User            => 'user',
                :Users           => 'users',
-               :Invitations     => 'invitations'
+               :Invitations     => 'invitations',
+               :Pagination      => 'pagination',
+               :PageLinks       => 'page_links',
+               :PagedRequest    => 'paged_request',
+               :PageIterator    => 'page_iterator'
 
   #:Teams           => 'teams',
-  #:PullRequests    => 'pull_requests',
   #:Users           => 'users',
   #:Events          => 'events',
   #:Search          => 'search',
-  #:PageLinks       => 'page_links',
-  #:PageIterator    => 'page_iterator',
-  #:PagedRequest    => 'paged_request'
 
 end # BitBucket

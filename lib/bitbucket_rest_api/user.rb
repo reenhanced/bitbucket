@@ -2,7 +2,7 @@
 
 module BitBucket
   class User < API
-
+    @version = '1.0'
 
     DEFAULT_USER_OPTIONS = {
         "first_name"      => "",

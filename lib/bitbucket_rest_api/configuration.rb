@@ -5,6 +5,7 @@ module BitBucket
 
     VALID_OPTIONS_KEYS         = [
         :adapter,
+        :auto_pagination,
         :client_id,
         :client_secret,
         :oauth_token,
@@ -45,7 +46,7 @@ module BitBucket
     DEFAULT_BASIC_AUTH         = nil
 
     # The endpoint used to connect to BitBucket if none is set, in the event that BitBucket is ever available on location
-    DEFAULT_ENDPOINT           = 'https://bitbucket.org/api/2.0'.freeze
+    DEFAULT_ENDPOINT           = 'https://bitbucket.org/api/1.0'.freeze
 
     # The value sent in the http header for 'User-Agent' if none is set
     DEFAULT_USER_AGENT         = "BitBucket Ruby Gem #{BitBucket::VERSION::STRING}".freeze
@@ -61,6 +62,9 @@ module BitBucket
 
     # By default, don't set repository name
     DEFAULT_REPO               = nil
+
+    # By default, don't auto-paginate results
+    DEFAULT_AUTO_PAGINATION     = false
 
     attr_accessor *VALID_OPTIONS_KEYS
 
@@ -81,6 +85,7 @@ module BitBucket
 
     def set_defaults
       self.adapter            = DEFAULT_ADAPTER
+      self.auto_pagination    = DEFAULT_AUTO_PAGINATION
       self.client_id          = DEFAULT_CLIENT_ID
       self.client_secret      = DEFAULT_CLIENT_SECRET
       self.oauth_token        = DEFAULT_OAUTH_TOKEN

@@ -27,13 +27,7 @@ module BitBucket
 
     ACCEPT_CHARSET = 'Accept-Charset'.freeze
 
-    # Link headers
-    HEADER_LINK = "Link".freeze
-
-    HEADER_NEXT = "X-Next".freeze
-
-    HEADER_LAST = "X-Last".freeze
-
+    # Link params
     META_REL = "rel".freeze
 
     META_LAST = "last".freeze
@@ -45,8 +39,6 @@ module BitBucket
     META_PREV = "prev".freeze
 
     PARAM_PAGE = "page".freeze
-
-    PARAM_PER_PAGE = "per_page".freeze
 
     PARAM_START_PAGE = "start_page".freeze
 

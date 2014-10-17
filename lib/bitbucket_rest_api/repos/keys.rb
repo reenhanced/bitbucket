@@ -2,6 +2,7 @@
 
 module BitBucket
   class Repos::Keys < API
+    @version = '1.0'
 
     VALID_KEY_PARAM_NAMES = %w[ label key ].freeze
 

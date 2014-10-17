@@ -4,6 +4,8 @@ module BitBucket
   class Issues < API
     extend AutoloadHelper
 
+    @version = '1.0'
+
     autoload_all 'bitbucket_rest_api/issues',
                  :Comments   => 'comments',
                  :Components => 'components',
