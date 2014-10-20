@@ -16,11 +16,11 @@ module BitBucket
       attr_accessor :"#{attr}_page_uri", :"#{attr}_page"
     end
 
-    attr_reader :current_api
+    attr_reader :current_page
 
-    def initialize(links, current_api)
-      @links       = links
-      @current_api = current_api
+    def initialize(env)
+      @links        = PageLinks.new(env)
+      @current_page = current_api(env.body[PARAM_PAGE])
       update_page_links @links
     end
 
@@ -70,7 +70,7 @@ module BitBucket
       params = parse_query(page_uri.query)
 
       if next_page and next_page >= 1
-        params['page'] = parse_page_number(attribute)
+        params['page'] = attribute.to_i
       end
 
       response = page_request(page_uri.path, params)
@@ -78,34 +78,11 @@ module BitBucket
       response
     end
 
-    def parse_page_number(uri) # :nodoc:
-      parse_page_params(uri, PARAM_PAGE)
-    end
-
-    # Extracts query string parameter for given name
-    def parse_page_params(uri, attr) # :nodoc:
-      return -1 if uri.nil? || uri.empty?
-      parsed = nil
-      begin
-        parsed = URI.parse(uri)
-      rescue URI::Error => e
-        return -1
-      end
-      param = parse_query_for_param(parsed.query, attr)
-      return -1 if param.nil? || param.empty?
-      begin
-        return param.to_i
-      rescue ArgumentError => err
-        return -1
-      end
-    end
-
     # Wholesale update of all link attributes
     def update_page_links(links) # :nodoc:
-puts "Links: #{links.class}"
       ATTRIBUTES.each do |attr|
         self.send(:"#{attr}_page_uri=", links.send(:"#{attr}"))
-        self.send(:"#{attr}_page=", parse_page_number(links.send(:"#{attr}")))
+        self.send(:"#{attr}_page=", links.send(:"#{attr}"))
       end
     end
 

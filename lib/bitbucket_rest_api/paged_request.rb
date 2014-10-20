@@ -4,14 +4,16 @@ module BitBucket
 
   # A module that adds http get request to response pagination
   module PagedRequest
+    include BitBucket::Request
     include BitBucket::Constants
+    include BitBucket::Normalizer
 
     FIRST_PAGE = 1 # Default request page if none provided
 
     NOT_FOUND  = -1 # Page parameter not present
 
     def default_page
-      current_api.page ? current_api.page : FIRST_PAGE
+      current_page ? current_page : FIRST_PAGE
     end
 
     # Perform http get request with pagination parameters

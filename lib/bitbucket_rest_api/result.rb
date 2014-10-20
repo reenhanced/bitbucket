@@ -66,7 +66,7 @@ module BitBucket
 
     # Return page links
     def links
-      @@links = BitBucket::PageLinks.new(self.body)
+      @@links = BitBucket::PageLinks.new(@env)
     end
 
     # Iterator like each for response pages. If there are no pages to
@@ -129,7 +129,7 @@ module BitBucket
 
     # Internally used page iterator
     def page_iterator # :nodoc:
-      @@page_iterator = BitBucket::PageIterator.new(links, self)
+      @@page_iterator = BitBucket::PageIterator.new(@env)
     end
 
   end # Result
