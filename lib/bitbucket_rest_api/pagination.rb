@@ -8,7 +8,7 @@ module BitBucket
 
     # Return page links
     def links
-      @links = BitBucket::PageLinks.new(env[:body])
+      @links = BitBucket::PageLinks.new(self.body)
     end
 
     # Iterate over results set pages by automatically calling `next_page`
@@ -18,7 +18,7 @@ module BitBucket
     # instances or just per given request.
     #
     def auto_paginate(auto=false)
-      if (current_api.auto_pagination? || auto) && self.body.has_key?(:values)
+      if (auto_pagination? || auto) && self.body.has_key?(:values)
         resources_bodies = []
         each_page { |resource| resources_bodies += resource.body }
         self.body = resources_bodies
@@ -90,7 +90,8 @@ module BitBucket
 
     # Internally used page iterator
     def page_iterator # :nodoc:
-      @page_iterator = BitBucket::PageIterator.new(links, current_api)
+binding.pry
+      @page_iterator = BitBucket::PageIterator.new(links, self)
     end
 
   end # Pagination

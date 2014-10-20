@@ -3,8 +3,13 @@
 module BitBucket
   module Result
     include BitBucket::Constants
+    include Pagination
 
     # TODO Add result counts method to check total items looking at result links
+
+    def paginated?
+      loaded? ? !@env[:body][PARAM_PAGE].nil? : false
+    end
 
     def ratelimit_limit
       loaded? ? @env[:response_headers][RATELIMIT_LIMIT] : nil
@@ -61,7 +66,7 @@ module BitBucket
 
     # Return page links
     def links
-      @@links = BitBucket::PageLinks.new(@env[:body])
+      @@links = BitBucket::PageLinks.new(self.body)
     end
 
     # Iterator like each for response pages. If there are no pages to
@@ -124,7 +129,7 @@ module BitBucket
 
     # Internally used page iterator
     def page_iterator # :nodoc:
-      @@page_iterator = BitBucket::PageIterator.new(@env)
+      @@page_iterator = BitBucket::PageIterator.new(links, self)
     end
 
   end # Result

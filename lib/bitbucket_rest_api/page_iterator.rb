@@ -102,6 +102,7 @@ module BitBucket
 
     # Wholesale update of all link attributes
     def update_page_links(links) # :nodoc:
+puts "Links: #{links.class}"
       ATTRIBUTES.each do |attr|
         self.send(:"#{attr}_page_uri=", links.send(:"#{attr}"))
         self.send(:"#{attr}_page=", parse_page_number(links.send(:"#{attr}")))
