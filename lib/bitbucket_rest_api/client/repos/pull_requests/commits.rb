@@ -1,13 +1,8 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::PullRequests::Commits < API
+  class Client::Repos::PullRequests::Commits < API
     @version = '2.0'
-
-    # Creates new Repos::PullRequests::Commits API
-    def initialize(options = {})
-      super(options)
-    end
 
     # List commits on a pull request
     #

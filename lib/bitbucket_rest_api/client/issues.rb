@@ -1,15 +1,13 @@
 # encoding: utf-8
 
 module BitBucket
-  class Issues < API
-    extend AutoloadHelper
-
+  class Client::Issues < API
     @version = '1.0'
 
-    autoload_all 'bitbucket_rest_api/issues',
-                 :Comments   => 'comments',
-                 :Components => 'components',
-                 :Milestones => 'milestones'
+    require_all 'bitbucket_rest_api/client/issues',
+      'comments',
+      'components',
+      'milestones'
 
     VALID_ISSUE_PARAM_NAMES = %w[
       title
@@ -34,25 +32,14 @@ module BitBucket
         'kind'      => %w[ bug enhancement proposal task ]
     }
 
-    # Creates new Issues API
-    def initialize(options = { })
-      super(options)
-    end
-
     # Access to Issues::Comments API
-    def comments
-      @comments ||= ApiFactory.new 'Issues::Comments'
-    end
+    namespace :comments
 
     # Access to Issues::Components API
-    def components
-      @components ||= ApiFactory.new 'Issues::Components'
-    end
+    namespace :components
 
     # Access to Issues::Milestones API
-    def milestones
-      @milestones ||= ApiFactory.new 'Issues::Milestones'
-    end
+    namespace :milestones
 
     # List issues for a repository
     #
@@ -81,7 +68,6 @@ module BitBucket
 
       normalize! params
       filter! VALID_ISSUE_PARAM_NAMES, params
-      # _merge_mime_type(:issue, params)
       assert_valid_values(VALID_ISSUE_PARAM_VALUES, params)
 
       response = get_request("/repositories/#{user}/#{repo.downcase}/issues", params)
@@ -103,7 +89,6 @@ module BitBucket
       _validate_presence_of issue_id
 
       normalize! params
-      # _merge_mime_type(:issue, params)
 
       get_request("/repositories/#{user}/#{repo.downcase}/issues/#{issue_id}", params)
     end
@@ -122,7 +107,6 @@ module BitBucket
       _validate_presence_of issue_id
 
       normalize! params
-      # _merge_mime_type(:issue, params)
 
       delete_request("/repositories/#{user}/#{repo}/issues/#{issue_id}", params)
     end
@@ -171,7 +155,6 @@ module BitBucket
 
       normalize! params
       _merge_user_into_params!(params) unless params.has_key?('user')
-      # _merge_mime_type(:issue, params)
       filter! VALID_ISSUE_PARAM_NAMES, params
       assert_required_keys(%w[ title ], params)
 
@@ -222,7 +205,6 @@ module BitBucket
       _validate_presence_of issue_id
 
       normalize! params
-      # _merge_mime_type(:issue, params)
       filter! VALID_ISSUE_PARAM_NAMES, params
 
       put_request("/repositories/#{user}/#{repo.downcase}/issues/#{issue_id}/", params)

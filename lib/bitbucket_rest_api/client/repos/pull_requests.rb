@@ -1,14 +1,13 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::PullRequests < API
-    extend AutoloadHelper
+  class Client::Repos::PullRequests < API
 
     # Load all the modules after initializing Repos to avoid superclass mismatch
-    autoload_all 'bitbucket_rest_api/repos/pull_requests',
-                 :Comments  => 'comments',
-                 :Commits   => 'commits',
-                 :Activity  => 'activity'
+    require_all 'bitbucket_rest_api/client/repos/pull_requests',
+      'comments',
+      'commits',
+      'activity'
 
     VALID_PULL_REQUEST_PARAM_NAMES = %w[
       title
@@ -25,15 +24,9 @@ module BitBucket
 
     @version = '2.0'
 
-    # Creates new PullRequests API
-    def initialize(options = { })
-      super(options)
-    end
-
-    # Access to Repos::PullRequests::Comments API
-    def comments
-      @comments ||= ApiFactory.new 'Repos::PullRequests::Comments'
-    end
+    # Access to Client::Repos::PullRequests::Comments API
+    namespace :comments
+    namespace :commits
 
     # List pull requests for a repository
     #

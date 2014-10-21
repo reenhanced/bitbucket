@@ -1,54 +1,83 @@
 # encoding: utf-8
 
+require 'bitbucket_rest_api/request/oauth'
+require 'bitbucket_rest_api/request/basic_auth'
+require 'bitbucket_rest_api/request/jsonize'
+
+require 'bitbucket_rest_api/connection'
+
 module BitBucket
   # Defines HTTP verbs
-  module Request
+  class Request
+    include Connection
 
-    METHODS = [:get, :post, :put, :delete, :patch]
+    HTTP_METHODS = [:get, :post, :put, :delete, :patch]
     METHODS_WITH_BODIES = [ :post, :put, :patch ]
 
-    def get_request(path, params={}, options={})
-      request(:get, path, params, options)
+    # Return http verb
+    #
+    # @return [Symbol]
+    attr_reader :action
+
+    # Return url
+    #
+    # @return [String]
+    attr_accessor :path
+
+    # Return api this request is associated with
+    #
+    # @return [BitBucket::API]
+    attr_reader :api
+
+    # Create a new Request
+    #
+    # @return [BitBucket::Request]
+    #
+    # @api public
+    def initialize(action, path, api)
+      @action = action
+      @path   = path
+      @api    = api
     end
 
-    def patch_request(path, params={}, options={})
-      request(:patch, path, params, options)
-    end
-
-    def post_request(path, params={}, options={})
-      request(:post, path, params, options)
-    end
-
-    def put_request(path, params={}, options={})
-      request(:put, path, params, options)
-    end
-
-    def delete_request(path, params={}, options={})
-      request(:delete, path, params, options)
-    end
-
-    def request(method, path, params, options)
-      if !METHODS.include?(method)
-        raise ArgumentError, "unkown http method: #{method}"
+    # Performs a request
+    #
+    # @param [Symbol] method - The Symbol the HTTP verb
+    # @param [String] path   - String relative URL to access
+    # @param [Hash] params   - Hash to configure the request API
+    #
+    # @return [BitBucket::ResponseWrapper]
+    #
+    # @api private
+    def call(current_options, params)
+      unless HTTP_METHODS.include?(action)
+        raise ArgumentError, "unknown http method: #{method}"
       end
-      # _extract_mime_type(params, options)
 
-      puts "EXECUTED: #{method} - #{path} with #{params} and #{options}" if ENV['DEBUG']
+      puts "EXECUTED: #{action} - #{path} with PARAMS: #{params}" if ENV['DEBUG']
 
-      conn = connection(options)
-      path = (conn.path_prefix + path).gsub(/\/\//,'/') if conn.path_prefix != '/'
+      request_options    = params
+      connection_options = current_options.merge(request_options)
+      conn               = connection(api, connection_options)
 
-      response = conn.send(method) do |request|
-        case method.to_sym
-        when *(METHODS - METHODS_WITH_BODIES)
-          request.body = params.delete('data') if params.has_key?('data')
-          request.url(path, params)
+      if conn.path_prefix != '/' && self.path.index(conn.path_prefix) != 0
+        self.path = (conn.path_prefix + self.path).gsub(/\/(\/)*/, '/')
+      end
+
+      response = conn.send(action) do |request|
+        case action.to_sym
+        when *(HTTP_METHODS - METHODS_WITH_BODIES)
+          request.body = params.data if params.has_key?('data')
+          if params.has_key?('encoder')
+            request.params.params_encoder(params.encoder)
+          end
+          request.url(self.path, params.to_hash)
         when *METHODS_WITH_BODIES
-          request.path = path
+          request.url(self.path, connection_options[:query] || {})
           request.body = extract_data_from_params(params) unless params.empty?
         end
       end
-      response.body
+      ResponseWrapper.new(response, api)
     end
 
     private

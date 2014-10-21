@@ -61,15 +61,6 @@ module BitBucket
     end
     alias :previous_page :prev_page
 
-    # Retrives the result of the last page. Returns <tt>nil</tt> if there is
-    # no last page - either because you are already on the last page,
-    # there is only one page or there are no pages at all in the result.
-    def last_page
-      last_request = page_iterator.last
-      self.instance_eval { @env = last_request.env } if last_request
-      last_request
-    end
-
     # Retrives a specific result for a page given page number.
     # The <tt>page_number</tt> parameter is not validate, hitting a page
     # that does not exist will return BitBucket API error. Consequently, if
@@ -90,7 +81,7 @@ module BitBucket
 
     # Internally used page iterator
     def page_iterator # :nodoc:
-      @page_iterator = BitBucket::PageIterator.new(@env)
+      @page_iterator = BitBucket::PageIterator.new(links, current_api)
     end
 
   end # Pagination

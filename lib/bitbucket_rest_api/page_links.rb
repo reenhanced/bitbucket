@@ -1,7 +1,6 @@
 module BitBucket
-  # Determines the links in the current response link header to be used
-  # to find the links to other pages of request responses. These will
-  # only be present if the result set size exceeds the per page limit.
+  # Determines the links in the current response to be used
+  # to find the links to other pages of request responses.
   class PageLinks
     include BitBucket::Constants
 

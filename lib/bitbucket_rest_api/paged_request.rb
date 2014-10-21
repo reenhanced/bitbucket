@@ -4,7 +4,6 @@ module BitBucket
 
   # A module that adds http get request to response pagination
   module PagedRequest
-    include BitBucket::Request
     include BitBucket::Constants
     include BitBucket::Normalizer
 
@@ -23,7 +22,7 @@ module BitBucket
         params[PARAM_PAGE] = default_page
       end
 
-      current_api.get_request(path, normalize!(Hash[params]))
+      current_api.get_request(path, ParamsHash.new(params))
     end
 
   end # PagedRequest

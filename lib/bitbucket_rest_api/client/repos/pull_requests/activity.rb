@@ -1,13 +1,8 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::PullRequests::Activity < API
+  class Client::Repos::PullRequests::Activity < API
     @version = '2.0'
-
-    # Creates new Repos::PullRequests::Activity API
-    def initialize(options = {})
-      super(options)
-    end
 
     # Get the activity for a pull request
     #

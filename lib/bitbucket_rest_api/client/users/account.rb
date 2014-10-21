@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module BitBucket
-  class Users::Account < API
+  class Client::Users::Account < API
     @version = '1.0'
 
     # API about users/account , please refer to 

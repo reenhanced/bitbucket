@@ -1,20 +1,22 @@
 # -*- encoding: utf-8 -*-
 
 require 'bitbucket_rest_api/configuration'
-require 'bitbucket_rest_api/connection'
-require 'bitbucket_rest_api/validations'
-require 'bitbucket_rest_api/request'
 require 'bitbucket_rest_api/core_ext/hash'
 require 'bitbucket_rest_api/core_ext/array'
 require 'bitbucket_rest_api/compatibility'
+require 'bitbucket_rest_api/null_encoder'
+
+require 'bitbucket_rest_api/request/verbs'
+
 require 'bitbucket_rest_api/api/actions'
-require 'bitbucket_rest_api/api_factory'
+require 'bitbucket_rest_api/api/factory'
 
 module BitBucket
   class API
+    extend BitBucket::ClassMethods
+    include Constants
     include Authorization
-    include Connection
-    include Request
+    include Request::Verbs
 
     # TODO consider these optional in a stack
     include Validations
@@ -23,16 +25,18 @@ module BitBucket
 
     @version = '1.0'
 
-    attr_reader *Configuration::VALID_OPTIONS_KEYS
+    attr_reader *BitBucket.configuration.property_names
 
-    attr_accessor *VALID_API_KEYS
+    attr_accessor *Validations::VALID_API_KEYS
+
+    attr_accessor :current_options
 
     # Callback to update global configuration options
     class_eval do
-      Configuration::VALID_OPTIONS_KEYS.each do |key|
+      BitBucket.configuration.property_names.each do |key|
         define_method "#{key}=" do |arg|
           self.instance_variable_set("@#{key}", arg)
-          BitBucket.send("#{key}=", arg)
+          self.current_options.merge!({:"#{key}" => arg})
         end
       end
     end
@@ -40,18 +44,22 @@ module BitBucket
     # Creates new API
     def initialize(options={}, &block)
       super()
-      setup options
-      set_api_client
+      setup(options)
+      yield_or_eval(&block) if block_given?
+    end
 
-      self.instance_eval(&block) if block_given?
+    def yield_or_eval(&block)
+      return unless block
+      block.arity > 0 ? yield(self) : self.instance_eval(&block)
     end
 
     def setup(options={})
-      options = BitBucket.options.merge(options)
+      options = BitBucket.configuration.fetch.merge(options)
+      self.current_options = options
       if self.class.instance_variable_get('@version') == '2.0'
         options[:endpoint] = BitBucket.endpoint.gsub(/\/api\/[0-9.]+/, "/api/2.0")
       end
-      Configuration::VALID_OPTIONS_KEYS.each do |key|
+      BitBucket.configuration.property_names.each do |key|
         send("#{key}=", options[key])
       end
       process_basic_auth(options[:basic_auth])
@@ -85,6 +93,73 @@ module BitBucket
       end
     end
 
+    # Set a configuration option for a given namespace
+    #
+    # @param [String] option
+    # @param [Object] value
+    # @param [Boolean] ignore_setter
+    #
+    # @return [self]
+    #
+    # @api public
+    def set(option, value=(not_set=true), ignore_setter=false, &block)
+      raise ArgumentError, 'value not set' if block and !not_set
+      return self if !not_set and value.nil?
+
+      if not_set
+        set_options option
+        return self
+      end
+
+      if respond_to?("#{option}=") and not ignore_setter
+        return __send__("#{option}=", value)
+      end
+
+      define_accessors option, value
+      self
+    end
+
+    # Defines a namespace
+    #
+    # @param [Array[Symbol]] names
+    #   the name for the scope
+    #
+    # @return [self]
+    #
+    # @api public
+    def self.namespace(*names)
+      options = names.last.is_a?(Hash) ? names.pop : {}
+      names   = names.map(&:to_sym)
+      name    = names.pop
+      return if public_method_defined?(name)
+
+      class_name = extract_class_name(name, options)
+      define_method(name) do |*args, &block|
+        options = args.last.is_a?(Hash) ? args.pop : {}
+        API::Factory.new(class_name, current_options.merge(options), &block)
+      end
+      self
+    end
+
+    # Extracts class name from options
+    #
+    # @param [Hash] options
+    # @option options [String] :full_name
+    #   the full name for the class
+    # @option options [Boolean] :root
+    #   if the class is at the root or not
+    #
+    # @return [String]
+    #
+    # @api private
+    def self.extract_class_name(name, options)
+      converted  = options.fetch(:full_name, name).to_s
+      converted  = converted.split('_').map(&:capitalize).join
+      class_name = options.fetch(:root, false) ? '': "#{self.name}::"
+      class_name += converted
+      class_name
+    end
+
     def _update_user_repo_params(user_name, repo_name=nil) # :nodoc:
       self.user = user_name || self.user
       self.repo = repo_name || self.repo
@@ -98,27 +173,42 @@ module BitBucket
       { 'user' => self.user, 'repo' => self.repo }.merge!(params)
     end
 
-    # TODO: See whether still needed, consider adding to core_exts
-    def _hash_traverse(hash, &block)
-      hash.each do |key, val|
-        block.call(key)
-        case val
-        when Hash
-          val.keys.each do |k|
-            _hash_traverse(val, &block)
-          end
-        when Array
-          val.each do |item|
-            _hash_traverse(item, &block)
-          end
-        end
+
+    private
+
+    # Set multiple options
+    #
+    # @api private
+    def set_options(options)
+      unless options.respond_to?(:each)
+        raise ArgumentError, 'cannot iterate over value'
       end
-      return hash
+      options.each { |key, value| set(key, value) }
     end
 
-    def _merge_mime_type(resource, params) # :nodoc:
-                                           #       params['resource'] = resource
-                                           #       params['mime_type'] = params['mime_type'] || :raw
+    # Define setters and getters
+    #
+    # @api private
+    def define_accessors(option, value)
+      setter = proc { |val|  set option, val, true }
+      getter = proc { value }
+
+      define_singleton_method("#{option}=", setter) if setter
+      define_singleton_method(option, getter) if getter
+    end
+
+    # Dynamically define a method for setting request option
+    #
+    # @api private
+    def define_singleton_method(method_name, content=Proc.new)
+      (class << self; self; end).class_eval do
+        undef_method(method_name) if method_defined?(method_name)
+        if String === content
+          class_eval("def #{method_name}() #{content}; end")
+        else
+          define_method(method_name, &content)
+        end
+      end
     end
 
   end # API

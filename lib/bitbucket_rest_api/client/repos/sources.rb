@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::Sources < API
+  class Client::Repos::Sources < API
     @version = '1.0'
 
     REQUIRED_COMMENT_PARAMS = %w[

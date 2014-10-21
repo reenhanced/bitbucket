@@ -1,17 +1,12 @@
 # encoding: utf-8
 
 module BitBucket
-  class Issues::Milestones < API
+  class Client::Issues::Milestones < API
     @version = '1.0'
 
     VALID_MILESTONE_INPUTS = %w[
       name
     ].freeze # :nodoc:
-
-    # Creates new Issues::Milestones API
-    def initialize(options = {})
-      super(options)
-    end
 
     # List milestones for a repository
     #

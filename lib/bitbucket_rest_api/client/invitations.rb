@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module BitBucket
-  class Invitations < API
+  class Client::Invitations < API
     @version = '1.0'
 
     def invite(user_name, repo_name, emailaddress, perm)
@@ -10,8 +10,7 @@ module BitBucket
       _validate_presence_of emailaddress
       perm ||= "write"
 
-      post_request("/invitations/#{user}/#{repo.downcase}/#{emailaddress}",
-                   permission: perm)
+      post_request("/invitations/#{user}/#{repo.downcase}/#{emailaddress}", permission: perm)
     end
   end
 end

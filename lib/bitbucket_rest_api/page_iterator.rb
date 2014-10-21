@@ -16,11 +16,11 @@ module BitBucket
       attr_accessor :"#{attr}_page_uri", :"#{attr}_page"
     end
 
-    attr_reader :current_page
+    attr_reader :current_api
 
-    def initialize(env)
-      @links        = PageLinks.new(env)
-      @current_page = current_api(env.body[PARAM_PAGE])
+    def initialize(links, current_api)
+      @links        = links
+      @current_api = current_api
       update_page_links @links
     end
 

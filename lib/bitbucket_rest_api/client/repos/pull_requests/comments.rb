@@ -1,13 +1,8 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::PullRequests::Comments < API
+  class Client::Repos::PullRequests::Comments < API
     @version = '2.0'
-
-    # Creates new Repos::PullRequests::Comments API
-    def initialize(options = {})
-      super(options)
-    end
 
     # List comments on a pull request
     #

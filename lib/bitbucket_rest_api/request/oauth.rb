@@ -3,7 +3,7 @@
 require 'faraday'
 
 module BitBucket
-  module Request
+  class Request
     class OAuth < Faraday::Middleware
       include BitBucket::Utils::Url
 
@@ -18,12 +18,12 @@ module BitBucket
         if (@token and @secret) and (!@token.empty? and !@secret.empty?)
           access_token = ::OAuth::AccessToken.new(@consumer, @token, @secret)
           env[:url].query = build_query params
-          
+
           puts oauth_helper.header
           puts oauth_helper.header.class
           env[:request_headers].merge!(AUTH_HEADER => oauth_helper.header)
         end
-          
+
           env[:url].query = build_query params
 
 

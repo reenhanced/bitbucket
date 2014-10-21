@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::Following < API
+  class Client::Repos::Following < API
     @version = '1.0'
 
     # List repo followers
