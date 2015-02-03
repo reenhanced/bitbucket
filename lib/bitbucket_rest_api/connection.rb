@@ -10,7 +10,9 @@ module BitBucket
         :url,
         :params,
         :request,
-        :ssl
+        :ssl,
+        :builder,
+        :api
     ].freeze
 
     def default_options(options={})
@@ -34,15 +36,10 @@ module BitBucket
     # Exposes middleware builder to facilitate custom stacks and easy
     # addition of new extensions such as cache adapter.
     #
-    def stack(options={}, &block)
+    def stack(options={})
       @stack ||= begin
         builder_class = defined?(Faraday::RackBuilder) ? Faraday::RackBuilder : Faraday::Builder
-
-        if block_given?
-          builder_class.new(&block)
-        else
-          builder_class.new(&BitBucket.default_middleware(options))
-        end
+        builder_class.new(&BitBucket.default_middleware(options))
       end
     end
 
@@ -51,7 +48,10 @@ module BitBucket
     def connection(api, options = {})
       connection_options = default_options(options)
       clear_cache unless options.empty?
-      connection_options.merge!(builder: stack(options.merge!(api: api)))
+      builder = api.stack ? api.stack : stack(options.merge!(api: api))
+      connection_options.merge!(builder: builder)
+      connection_options.keep_if {|key, value| ALLOWED_OPTIONS.include?(key) }
+
       puts "OPTIONS:#{connection_options.inspect}" if ENV['DEBUG']
 
       @connection ||= Faraday.new(connection_options)

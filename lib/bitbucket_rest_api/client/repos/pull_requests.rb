@@ -33,15 +33,19 @@ module BitBucket
     # = Inputs
     #  <tt>:state</tt> - Optional - State of the pull request (OPEN, MERGED, DECLINED)
     #
-    def list(user_name = self.user, repo_name = self.repo, params = {'state' => 'open'})
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
+    def list(*args)
+      args = { user: self.user, repo: self.repo, state: 'open'}.merge(Hash[args])
+      #_update_user_repo_params(user_name, repo_name)
+      #_validate_user_repo_params(user, repo) unless user? && repo?
+      params = arguments(args, required: [:user, :repo, :state]) do
+        permit [:state]
+        assert_values VALID_PULL_REQUEST_STATE_VALUES
+      end.params
 
-      normalize! params
-      filter! ['state'], params
-      assert_valid_values(VALID_PULL_REQUEST_STATE_VALUES, params)
+      #normalize! params
+      #filter! ['state'], params
 
-      response = get_request("/repositories/#{user}/#{repo.downcase}/pullrequests", params)
+      response = get_request("/repositories/#{user}/#{self.repo.downcase}/pullrequests", params)
 
       return response unless block_given?
       response.each { |el| yield el }

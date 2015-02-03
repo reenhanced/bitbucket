@@ -6,9 +6,13 @@ module BitBucket
   module Pagination
     include BitBucket::Constants
 
+    def paginated?
+      body.is_a?(Hash) and body[PARAM_PAGE].nil?
+    end
+
     # Return page links
     def links
-      @links = BitBucket::PageLinks.new(@env)
+      @links = BitBucket::PageLinks.new(self.response)
     end
 
     # Iterate over results set pages by automatically calling `next_page`
@@ -18,9 +22,9 @@ module BitBucket
     # instances or just per given request.
     #
     def auto_paginate(auto=false)
-      if (auto_pagination? || auto) && self.body.has_key?(:values)
+      if (current_api.auto_pagination? || auto)
         resources_bodies = []
-        each_page { |resource| resources_bodies += resource.body }
+        each_page { |resource| resources_bodies += resource.body.respond_to?(:values) ? resource.body.values : Array(resource.body) }
         self.body = resources_bodies
       end
       self

@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'faraday'
+require 'faraday_middleware'
 require 'bitbucket_rest_api/version'
 require 'bitbucket_rest_api/configuration'
 require 'bitbucket_rest_api/constants'

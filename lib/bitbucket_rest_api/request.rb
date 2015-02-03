@@ -56,7 +56,7 @@ module BitBucket
 
       puts "EXECUTED: #{action} - #{path} with PARAMS: #{params}" if ENV['DEBUG']
 
-      request_options    = params
+      request_options    = params.options
       connection_options = current_options.merge(request_options)
       conn               = connection(api, connection_options)
 
@@ -85,11 +85,6 @@ module BitBucket
     def extract_data_from_params(params) # :nodoc:
       return params['data'] if params.has_key?('data') and !params['data'].nil?
       return params
-    end
-
-    def _extract_mime_type(params, options) # :nodoc:
-      options['resource']  = params['resource'] ? params.delete('resource') : ''
-      options['mime_type'] = params['resource'] ? params.delete('mime_type') : ''
     end
 
   end # Request

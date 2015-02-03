@@ -10,6 +10,7 @@ require 'bitbucket_rest_api/request/verbs'
 
 require 'bitbucket_rest_api/api/actions'
 require 'bitbucket_rest_api/api/factory'
+require 'bitbucket_rest_api/api/arguments'
 
 module BitBucket
   class API
@@ -90,6 +91,32 @@ module BitBucket
         self.send("#{$1.to_s}=", nil)
       else
         super
+      end
+    end
+
+     # Acts as setter and getter for api requests arguments parsing.
+    #
+    # Returns Arguments instance.
+    #
+    def arguments(args=(not_set = true), options={}, &block)
+      if not_set
+        @arguments
+      else
+        @arguments = Arguments.new(options.merge!(api: self)).parse(*args, &block)
+      end
+    end
+
+    # Scope for passing request required arguments.
+    #
+    def with(args)
+      case args
+      when Hash
+        set args
+      when /.*\/.*/i
+        user, repo = args.split('/')
+        set :user => user, :repo => repo
+      else
+        ::Kernel.raise ArgumentError, 'This api does not support passed in arguments'
       end
     end
 

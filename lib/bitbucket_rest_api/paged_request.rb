@@ -12,7 +12,7 @@ module BitBucket
     NOT_FOUND  = -1 # Page parameter not present
 
     def default_page
-      current_page ? current_page : FIRST_PAGE
+      current_api.current_page ? current_api.current_page : FIRST_PAGE
     end
 
     # Perform http get request with pagination parameters
