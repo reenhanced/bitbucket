@@ -24,7 +24,13 @@ module BitBucket
     def auto_paginate(auto=false)
       if (current_api.auto_pagination? || auto)
         resources_bodies = []
-        each_page { |resource| resources_bodies += resource.body.respond_to?(:values) ? resource.body.values : Array(resource.body) }
+        each_page do |resource|
+          if resource.body.respond_to?(:values)
+            resources_bodies += resource.body[:values].collect {|value| ::Hashie::Mash.new(value) }
+          else
+            resources_bodies += Array(resource.body)
+          end
+        end
         self.body = resources_bodies
       end
       self
