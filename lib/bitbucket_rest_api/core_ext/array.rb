@@ -12,6 +12,6 @@ class Array # :nodoc:
 
   def extract_options!
     last.is_a?(::Hash) ? pop : {}
-  end
+  end unless method_defined?(:extract_options!)
 
 end # Array

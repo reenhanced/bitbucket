@@ -14,6 +14,11 @@ module BitBucket
       if request_with_body?(env)
         env[:request_headers][CONTENT_TYPE] ||= MIME_TYPE
         env[:body] = encode_body env unless env[:body].respond_to?(:to_str)
+      else
+        # Ensure valid body for put and post requests
+        if [:put, :patch, :post].include? env[:method]
+          env[:body] = encode_body({})
+        end
       end
       @app.call env
     end

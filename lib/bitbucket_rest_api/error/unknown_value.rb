@@ -8,7 +8,7 @@ module BitBucket #:nodoc
         super(
           generate_message(
             :problem => "Wrong value of '#{value}' for the parameter: #{key} provided for this request.",
-            :summary => "BitBucket gem checks the request parameters passed to ensure that github api is not hit unnecessairly and fails fast.",
+            :summary => "BitBucket gem checks the request parameters passed to ensure that bitbucket api is not hit unnecessairly and fails fast.",
             :resolution => "Permitted values are: #{permitted}, make sure these are the ones you are using"
           )
         )

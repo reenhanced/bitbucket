@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 module BitBucket
-  class User < API
-
+  class Client::User < API
+    @version = '1.0'
 
     DEFAULT_USER_OPTIONS = {
         "first_name"      => "",
@@ -11,11 +11,6 @@ module BitBucket
         # TODO: can this filed be modified?
         # "resource_uri"    => ""
     }.freeze
-
-    # Creates new User API
-    def initialize(options = { })
-      super(options)
-    end
 
     # Gets the basic information associated with an account and
     # a list of all of the repositories owned by the user.

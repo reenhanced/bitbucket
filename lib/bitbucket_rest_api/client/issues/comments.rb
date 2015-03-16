@@ -1,16 +1,12 @@
 # encoding: utf-8
 
 module BitBucket
-  class Issues::Comments < API
+  class Client::Issues::Comments < API
+    @version = '1.0'
 
     VALID_ISSUE_COMMENT_PARAM_NAME = %w[
       content
     ].freeze
-
-    # Creates new Issues::Comments API
-    def initialize(options = {})
-      super(options)
-    end
 
     # List comments on an issue
     #
@@ -25,7 +21,6 @@ module BitBucket
       _validate_presence_of issue_id
 
       normalize! params
-      # _merge_mime_type(:issue_comment, params)
 
       response = get_request("/repositories/#{user}/#{repo.downcase}/issues/#{issue_id}/comments/", params)
       return response unless block_given?
@@ -45,7 +40,6 @@ module BitBucket
       _validate_presence_of comment_id
 
       normalize! params
-      # _merge_mime_type(:issue_comment, params)
 
       get_request("/repositories/#{user}/#{repo.downcase}/issues/comments/#{comment_id}", params)
     end
@@ -67,7 +61,6 @@ module BitBucket
       _validate_presence_of issue_id
 
       normalize! params
-      # _merge_mime_type(:issue_comment, params)
       filter! VALID_ISSUE_COMMENT_PARAM_NAME, params
       assert_required_keys(%w[ content ], params)
 
@@ -90,7 +83,6 @@ module BitBucket
       _validate_presence_of comment_id
 
       normalize! params
-      # _merge_mime_type(:issue_comment, params)
       filter! VALID_ISSUE_COMMENT_PARAM_NAME, params
       assert_required_keys(%w[ content ], params)
 
@@ -109,7 +101,6 @@ module BitBucket
       _validate_presence_of comment_id
 
       normalize! params
-      # _merge_mime_type(:issue_comment, params)
 
       delete_request("/repositories/#{user}/#{repo.downcase}/issues/comments/#{comment_id}", params)
     end

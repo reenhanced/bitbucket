@@ -3,56 +3,52 @@
 module BitBucket
   class Client < API
 
+    require_all 'bitbucket_rest_api/client',
+      'issues',
+      'repos',
+      'users',
+      'invitations'
+
+    require_all 'bitbucket_rest_api/client/users', 'account'
+
+    namespace :issues
+
+    namespace :pull_requests
+
+    namespace :repos
+    alias :repositories :repos
+
+    # Many of the resources on the users API provide a shortcut for getting
+    # information about the currently authenticated user.
+    namespace :users
+
+    namespace :user
+    alias :user_api :user
+
+    namespace :invitations
+
     # This is a read-only API to the BitBucket events.
     # These events power the various activity streams on the site.
     def events(options = {})
       raise "Unimplemented"
-      #@events ||= ApiFactory.new 'Events', options
-    end
-
-    def issues(options = {})
-      @issues ||= ApiFactory.new 'Issues', options
+      #@events ||= Api::Factory.new 'Events', options
     end
 
     # An API for users to manage their own tokens.
     def oauth(options = {})
       raise "Unimpletmented"
-      #@oauth ||= ApiFactory.new 'Authorizations', options
+      #@oauth ||= Api::Factory.new 'Authorizations', options
     end
     alias :authorizations :oauth
 
     def teams(options = {})
       raise "Unimplemented"
-      #@teams ||= ApiFactory.new 'teams', options
+      #@teams ||= Api::Factory.new 'teams', options
     end
-
-    def pull_requests(options = {})
-      raise "Unimplemented"
-      #@pull_requests ||= ApiFactory.new 'PullRequests', options
-    end
-
-    def repos(options = {})
-      @repos ||= ApiFactory.new 'Repos', options
-    end
-    alias :repositories :repos
 
     def search(options = {})
       raise "Unimplemented"
-      #@search ||= ApiFactory.new 'Search', options
-    end
-
-    # Many of the resources on the users API provide a shortcut for getting
-    # information about the currently authenticated user.
-    def users(options = {})
-      @users ||= ApiFactory.new 'Users', options
-    end
-
-    def user_api(options = {})
-      @user_api ||= ApiFactory.new 'User', options
-    end
-
-    def invitations(options = {})
-      @invitations ||= ApiFactory.new "Invitations", options
+      #@search ||= Api::Factory.new 'Search', options
     end
   end # Client
 end # BitBucket

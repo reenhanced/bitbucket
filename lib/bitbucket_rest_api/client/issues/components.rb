@@ -1,14 +1,11 @@
 # encoding: utf-8
 
 module BitBucket
-  class Issues::Components < API
+  class Client::Issues::Components < API
+    @version = '1.0'
 
     VALID_COMPONENT_INPUTS = %w[ name ].freeze
 
-    # Creates new Issues::Components API
-    def initialize(options = {})
-      super(options)
-    end
     # List all components for a repository
     #
     # = Examples

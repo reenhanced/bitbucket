@@ -1,7 +1,8 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos::Services < API
+  class Client::Repos::Services < API
+    @version = '2.0'
 
     REQUIRED_KEY_PARAM_NAMES = %w[ type ].freeze
 

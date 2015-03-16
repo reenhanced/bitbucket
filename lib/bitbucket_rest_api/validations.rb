@@ -2,13 +2,12 @@
 
 module BitBucket
   module Validations
-    extend AutoloadHelper
 
-    autoload_all 'bitbucket_rest_api/validations',
-                 :Presence => 'presence',
-                 :Token    => 'token',
-                 :Format   => 'format',
-                 :Required => 'required'
+    BitBucket::require_all 'bitbucket_rest_api/validations',
+      'presence',
+      'token',
+      'format',
+      'required'
 
     include Presence
     include Format
@@ -18,6 +17,7 @@ module BitBucket
     VALID_API_KEYS = [
         'page',
         'per_page',
+        'auto_pagination',
         'jsonp_callback'
     ]
 

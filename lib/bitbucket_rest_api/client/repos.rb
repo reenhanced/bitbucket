@@ -1,16 +1,17 @@
 # encoding: utf-8
 
 module BitBucket
-  class Repos < API
-    extend AutoloadHelper
+  class Client::Repos < API
 
-    # Load all the modules after initializing Repos to avoid superclass mismatch
-    autoload_all 'bitbucket_rest_api/repos',
-                 :Changesets  => 'changesets',
-                 :Keys        => 'keys',
-                 :Services    => 'services',
-                 :Following   => 'following',
-                 :Sources     => 'sources'
+    require_all 'bitbucket_rest_api/client/repos',
+      'changesets',
+      'keys',
+      'services',
+      'following',
+      'sources',
+      'pull_requests'
+
+    @version = '1.0'
 
     DEFAULT_REPO_OPTIONS = {
         "website"         => "",
@@ -34,35 +35,23 @@ module BitBucket
       scm
     ].freeze
 
-    # Creates new Repositories API
-    def initialize(options = { })
-      super(options)
-    end
-
     # Access to Repos::Commits API
-    def changesets
-      @changesets ||= ApiFactory.new 'Repos::Changesets'
-    end
+    namespace :changesets
 
     # Access to Repos::Keys API
-    def keys
-      @keys ||= ApiFactory.new 'Repos::Keys'
-    end
+    namespace :keys
 
     # Access to Repos::Watchin API
-    def following
-      @following ||= ApiFactory.new 'Repos::Following'
-    end
+    namespace :following
 
     # Access to Repos::Commits API
-    def sources
-      @sources ||= ApiFactory.new 'Repos::Sources'
-    end
+    namespace :sources
 
     # Access to Repos::Services API
-    def services
-      @services ||= ApiFactory.new 'Repos::Services'
-    end
+    namespace :services
+
+    # Access to Repos::PullRequests API
+    namespace :pull_requests
 
     # List branches
     #
@@ -196,17 +185,14 @@ module BitBucket
     #   bitbucket.repos.list :user => 'user-name'
     #   bitbucket.repos.list :user => 'user-name', { |repo| ... }
     def list(*args)
-      params = args.extract_options!
-      normalize! params
-      _merge_user_into_params!(params) unless params.has_key?('user')
-      filter! %w[ user type ], params
+      #_merge_user_into_params!(params) unless params.has_key?('user')
+      arguments(args) do
+        permit %w[ user type ]
+      end
+      params = arguments.params
 
-      response = #if (user_name = params.delete("user"))
-                 #  get_request("/users/#{user_name}", params)
-                 #else
-                   # For authenticated user
-                   get_request("/user/repositories", params)
-                 #end
+      response = get_request("/user/repositories", params)
+
       return response unless block_given?
       response.each { |el| yield el }
     end

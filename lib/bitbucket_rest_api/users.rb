@@ -1,12 +1,10 @@
 # encoding: utf-8
 
 module BitBucket
-  class Users < API
-    extend AutoloadHelper
+  class Client::Users < API
+    @version = '1.0'
 
-    # Load all the modules after initializing Repos to avoid superclass mismatch
-    autoload_all 'bitbucket_rest_api/users',
-                 :Account       => 'account'
+    require_all 'bitbucket_rest_api/users', 'account'
 
 
     # Creates new Users API
@@ -15,9 +13,7 @@ module BitBucket
     end
 
     # Access to Users::Account API
-    def account
-      @account ||= ApiFactory.new 'Users::Account'
-    end
+    namespace :account
 
 
   end # Users
