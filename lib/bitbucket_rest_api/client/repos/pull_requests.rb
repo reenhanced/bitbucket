@@ -6,8 +6,12 @@ module BitBucket
     # Load all the modules after initializing Repos to avoid superclass mismatch
     require_all 'bitbucket_rest_api/client/repos/pull_requests',
       'comments',
-      'commits',
-      'activity'
+      'commits'
+
+    REQUIRED_PULL_REQUEST_OPTIONS = %w[
+      title
+      source
+    ]
 
     VALID_PULL_REQUEST_PARAM_NAMES = %w[
       title
@@ -43,7 +47,7 @@ module BitBucket
       # Bitbucket requires the state to be all caps or it returns all
       params['state']   = params['state'].upcase
 
-      response = get_request("/repositories/#{user}/#{repo}/pullrequests", params)
+      response = get_request("/repositories/#{user}/#{repo}/pullrequests/", params)
 
       return response unless block_given?
       response.each { |el| yield el }
@@ -56,14 +60,10 @@ module BitBucket
     #  bitbucket = BitBucket.new
     #  bitbucket.repos.pull_requests.find 'user-name', 'repo-name', 'pull-request-id'
     #
-    def get(user_name, repo_name, pull_request_id, params={ })
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+    def get(*args)
+      arguments(args, required: [:user, :repo, :pull_request_id])
 
-      normalize! params
-
-      get_request("/repositories/#{user}/#{repo.downcase}/pullrequests/#{pull_request_id}", params)
+      get_request("/repositories/#{arguments.user}/#{arguments.repo.downcase}/pullrequests/#{arguments.pull_request_id}", arguments.params)
     end
 
     alias :find :get
@@ -81,8 +81,8 @@ module BitBucket
     #  * <tt>[{ "username": "accountname" }]</tt>
     #
     # = Examples
-    #  bitbucket = BitBucket.new :user => 'user-name', :repo => 'repo-name'
-    #  bitbucket.repos.pull_requests.create
+    #  bitbucket = BitBucket.new
+    #  bitbucket.repos.pull_requests.create 'user-name', 'repo-name',
     #    "title" => "Fixes a bug",
     #    "description" => "Fixes not being able to see anything.",
     #    "source" => { "branch" => { "name" => "bug-fixes" } },
@@ -90,15 +90,13 @@ module BitBucket
     #    "reviewers" => [ { "username" => "octocat" } ],
     #    "close_source_branch" => true
     #
-    def create(user_name, repo_name, params={})
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
+    def create(*args)
+      arguments(args, required: [:user, :repo]) do
+        permit VALID_PULL_REQUEST_PARAM_NAMES
+        assert_required REQUIRED_PULL_REQUEST_OPTIONS
+      end
 
-      normalize! params
-      filter! VALID_PULL_REQUEST_PARAM_NAMES , params
-      assert_required_keys(%w[ title source ], params)
-
-      post_request("/repositories/#{user}/#{repo.downcase}/pullrequests/", params)
+      post_request("/repositories/#{arguments.user}/#{arguments.repo.downcase}/pullrequests", arguments.params)
     end
 
     # Edit a pull request
@@ -120,13 +118,17 @@ module BitBucket
     #    "reviewers" => [ { "username" => "octocat" } ],
     #    "close_source_branch" => true
     #
-    def update(user_name, repo_name, pull_request_id, params={})
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+    def update(*args)
+      arguments(args, required: [:user, :repo, :pull_request_id]) do
+        permit VALID_PULL_REQUEST_PARAM_NAMES
+      end
+
+      user            = arguments.user
+      repo            = arguments.repo
+      pull_request_id = arguments.pull_request_id
 
       # BitBucket will drop any data if it is not included, so we have to check for pre-existing data
-      existing_pull = get(user_name, repo_name, pull_request_id)
+      existing_pull = get(user, repo, pull_request_id)
       existing_pull_data = {
         'title' => existing_pull.title,
         'description' => existing_pull.description,
@@ -136,10 +138,7 @@ module BitBucket
         'reviewers' => existing_pull.reviewers,
         'close_source_branch' => existing_pull.close_source_branch
       }
-      params = normalize!(existing_pull_data).merge!(normalize!(params))
-
-      filter! VALID_PULL_REQUEST_PARAM_NAMES.reject{|param| param == 'source'}, params
-      assert_required_keys(%w[ title ], params)
+      params = normalize!(existing_pull_data).merge!(normalize!(arguments.params))
 
       put_request("/repositories/#{user}/#{repo.downcase}/pullrequests/#{pull_request_id}/", params)
     end
@@ -152,11 +151,9 @@ module BitBucket
     #  bitbucket.repos.pull_requests.reject 'user-name', 'repo-name', 'pull-request-id'
     #
     def decline(user_name, repo_name, pull_request_id)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+      arguments(args, required: [:user, :repo, :pull_request_id])
 
-      post_request("/repositories/#{user}/#{repo}/pullrequests/#{pull_request_id}/decline")
+      post_request("/repositories/#{arguments.user}/#{arguments.repo}/pullrequests/#{arguments.pull_request_id}/decline")
     end
     alias :reject :decline
 
@@ -167,11 +164,9 @@ module BitBucket
     #  bitbucket.repos.pull_requests.approve 'user-name', 'repo-name', 'pull-request-id'
     #
     def approve(user_name, repo_name, pull_request_id)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+      arguments(args, required: [:user, :repo, :pull_request_id])
 
-      post_request("/repositories/#{user}/#{repo}/pullrequests/#{pull_request_id}/approve")
+      post_request("/repositories/#{arguments.user}/#{arguments.repo}/pullrequests/#{arguments.pull_request_id}/approve")
     end
 
     # Get the diff for a pull request
@@ -181,11 +176,9 @@ module BitBucket
     #  bitbucket.repos.pull_requests.diff 'user-name', 'repo-name', 'pull-request-id'
     #
     def diff(user_name, repo_name, pull_request_id)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+      arguments(args, required: [:user, :repo, :pull_request_id])
 
-      get_request("/repositories/#{user}/#{repo}/pullrequests/#{pull_request_id}/diff")
+      get_request("/repositories/#{arguments.user}/#{arguments.repo}/pullrequests/#{arguments.pull_request_id}/diff")
     end
 
     # Get a log of all activity for a pull request
@@ -194,11 +187,13 @@ module BitBucket
     #  bitbucket = BitBucket.new
     #  bitbucket.repos.pull_requests.activity 'user-name', 'repo-name'
     #
-    def activity(user_name, repo_name)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
+    def activity(*args)
+      arguments(args, required: [:user, :repo, :pull_request_id])
 
-      get_request("/repositories/#{user}/#{repo}/pullrequests/activity")
+      response = get_request("/repositories/#{arguments.user}/#{arguments.repo}/pullrequests/#{arguments.pull_request_id}/activity")
+
+      return response unless block_given?
+      response.each { |el| yield el }
     end
   end # Repos::PullRequests
 end # BitBucket

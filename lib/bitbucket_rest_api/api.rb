@@ -58,7 +58,7 @@ module BitBucket
       options = BitBucket.configuration.fetch.merge(options)
       self.current_options = options
       if self.class.instance_variable_get('@version') == '2.0'
-        options[:endpoint] = BitBucket.endpoint.gsub(/\/api\/[0-9.]+/, "/api/2.0")
+        options[:endpoint] = BitBucket.endpoint_v2
       end
       BitBucket.configuration.property_names.each do |key|
         send("#{key}=", options[key])

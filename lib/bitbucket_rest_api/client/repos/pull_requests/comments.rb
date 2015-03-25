@@ -10,10 +10,11 @@ module BitBucket
     #  bitbucket = BitBucket.new
     #  bitbucket.repos.pull_requests.comments.all 'user-name', 'repo-name', 'pull-request-id'
     #
-    def list(user_name, repo_name, pull_request_id)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
+    def list(*args)
+      arguments(args, required: [:user, :repo, :pull_request_id])
+      user            = arguments.user
+      repo            = arguments.repo
+      pull_request_id = arguments.pull_request_id
 
       response = get_request("/repositories/#{user}/#{repo.downcase}/pullrequests/#{pull_request_id}/comments")
       return response unless block_given?
@@ -27,11 +28,12 @@ module BitBucket
     #  @bitbucket = BitBucket.new
     #  @bitbucket.repos.pull_requests.comments.get 'user-name', 'repo-name', 'pull-request-id')
     #
-    def get(user_name, repo_name, pull_request_id, comment_id)
-      _update_user_repo_params(user_name, repo_name)
-      _validate_user_repo_params(user, repo) unless user? && repo?
-      _validate_presence_of pull_request_id
-      _validate_presence_of comment_id
+    def get(*args)
+      arguments(args, required: [:user, :repo, :pull_request_id, :comment_id])
+      user            = arguments.user
+      repo            = arguments.repo
+      pull_request_id = arguments.pull_request_id
+      comment_id      = arguments.comment_id
 
       get_request("/repositories/#{user}/#{repo.downcase}/pullrequests/#{pull_request_id}/comments/#{comment_id}")
     end

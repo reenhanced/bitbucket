@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 module BitBucket
 
   # A module that decorates response with pagination helpers
@@ -7,7 +6,7 @@ module BitBucket
     include BitBucket::Constants
 
     def paginated?
-      body.is_a?(Hash) and body[PARAM_PAGE].nil?
+      body.is_a?(Hash) and !body[PARAM_PAGE].nil?
     end
 
     # Return page links
@@ -22,10 +21,10 @@ module BitBucket
     # instances or just per given request.
     #
     def auto_paginate(auto=false)
-      if (current_api.auto_pagination? || auto)
+      if paginated? and (current_api.auto_pagination? || auto)
         resources_bodies = []
         each_page do |resource|
-          if resource.body.respond_to?(:values)
+          if resource.body.respond_to?(:values) and resource.body[:values]
             resources_bodies += resource.body[:values].collect {|value| ::Hashie::Mash.new(value) }
           else
             resources_bodies += Array(resource.body)
