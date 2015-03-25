@@ -32,6 +32,7 @@ module BitBucket
 
     # The endpoint used to connect to BitBucket if none is set, in the event that BitBucket is ever available on location
     property :endpoint, default: 'https://bitbucket.org/api/1.0'.freeze
+    property :endpoint_v2, default: 'https://api.bitbucket.org/2.0'.freeze
 
     # The value sent in the http header for 'User-Agent' if none is set
     property :user_agent, default: "BitBucket Ruby Gem #{BitBucket::VERSION::STRING}".freeze
